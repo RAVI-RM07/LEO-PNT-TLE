@@ -1,7 +1,7 @@
 // ======================================
-// GLOBAL STATE
+// CONFIG / GLOBAL STATE
 // ======================================
-const API_URL = "http://localhost:5000/api/visible";
+const API_URL = "http://127.0.0.1:5500/api/visible";
 
 let manualLat = null;
 let manualLon = null;
@@ -9,7 +9,6 @@ let elevationFilter = 30;
 
 let satQueue = [];
 let isAnimating = false;
-let dummyCounter = 1;
 
 // ======================================
 // DOM READY
@@ -28,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ======================================
-// CLOCK (12H UTC)
+// CLOCK (UTC, 12H)
 // ======================================
 function updateClock() {
     const badge = document.querySelector(".time-badge");
@@ -52,12 +51,14 @@ function setupClock() {}
 // ======================================
 function setupDrawer() {
     const drawer = document.getElementById("sideDrawer");
-    document.getElementById("menuToggle")?.addEventListener("click", () => drawer.classList.add("open"));
-    document.getElementById("closeDrawerBtn")?.addEventListener("click", () => drawer.classList.remove("open"));
+    document.getElementById("menuToggle")
+        ?.addEventListener("click", () => drawer.classList.add("open"));
+    document.getElementById("closeDrawerBtn")
+        ?.addEventListener("click", () => drawer.classList.remove("open"));
 }
 
 // ======================================
-// MANUAL LAT / LON
+// MANUAL COORDINATES
 // ======================================
 function setupManualInput() {
     const btn = document.querySelector(".btn-primary");
@@ -83,7 +84,7 @@ function setupManualInput() {
 }
 
 // ======================================
-// ELEVATION FILTER
+// ELEVATION FILTER (10 / 30 / 60)
 // ======================================
 function setupElevationFilter() {
     document.querySelectorAll('input[name="elevation"]').forEach(radio => {
@@ -95,7 +96,7 @@ function setupElevationFilter() {
 }
 
 // ======================================
-// FETCH DATA
+// FETCH FROM BACKEND
 // ======================================
 async function fetchSatelliteData() {
     try {
@@ -115,13 +116,15 @@ async function fetchSatelliteData() {
         updateStatus(true);
         updateSystemOutput(data);
         processSatellites(data.satellites);
-    } catch {
+
+    } catch (err) {
+        console.error("Backend connection failed:", err);
         updateStatus(false);
     }
 }
 
 // ======================================
-// STATUS
+// STATUS INDICATOR
 // ======================================
 function updateStatus(ok) {
     const label = document.querySelector(".status-label-lg");
@@ -135,7 +138,7 @@ function updateStatus(ok) {
 }
 
 // ======================================
-// SYSTEM OUTPUT
+// SYSTEM OUTPUT (LAT / LON)
 // ======================================
 function updateSystemOutput(data) {
     const vals = document.querySelectorAll(".stat-val");
@@ -146,36 +149,33 @@ function updateSystemOutput(data) {
 }
 
 // ======================================
-// SATELLITE FILTER PIPELINE (FINAL)
+// SATELLITE FILTER PIPELINE
 // ======================================
 function processSatellites(sats) {
     if (!Array.isArray(sats)) return;
 
     let filtered = sats.filter(s => s.elevation_deg >= elevationFilter);
 
-    // 🔁 60° fallback → 50°
+    // 🔁 SMART FALLBACK ONLY FOR 60°
     if (elevationFilter === 60 && filtered.length < 4) {
         filtered = sats.filter(s => s.elevation_deg >= 50);
     }
 
-    // 🔁 still < 4 → inject dummy
-    if (filtered.length < 4) {
-        const needed = 4 - filtered.length;
-        filtered = filtered.concat(generateDummySatellites(needed));
-    }
+    filtered = filtered.slice(0, 10);
 
     updateRadar(filtered);
     prepareTableQueue(filtered);
 }
 
 // ======================================
-// RADAR (ICON + NAME)
+// RADAR RENDER
 // ======================================
 function updateRadar(sats) {
     const radar = document.querySelector(".radar-ui");
     if (!radar) return;
 
     radar.querySelectorAll(".sat-point").forEach(p => p.remove());
+
     const maxR = radar.clientWidth / 2;
 
     sats.forEach(s => {
@@ -188,13 +188,16 @@ function updateRadar(sats) {
         const p = document.createElement("div");
         p.className = "sat-point";
         p.style.transform = `translate(${x}px, ${y}px)`;
-        p.innerHTML = `<i class="fa-solid fa-satellite"></i><span class="sat-label">${s.name}</span>`;
+        p.innerHTML = `
+            <i class="fa-solid fa-satellite"></i>
+            <span class="sat-label">${s.name}</span>
+        `;
         radar.appendChild(p);
     });
 }
 
 // ======================================
-// TABLE FLOW (SMOOTH UPWARD)
+// TABLE FLOW
 // ======================================
 function prepareTableQueue(sats) {
     satQueue = [...sats];
@@ -207,7 +210,7 @@ function prepareTableQueue(sats) {
 }
 
 function animateTable() {
-    if (!isAnimating) return;
+    if (!isAnimating || satQueue.length === 0) return;
 
     const tbody = document.querySelector("tbody");
     if (!tbody) return;
@@ -226,30 +229,10 @@ function animateTable() {
             <td>${sat.sub_longitude.toFixed(4)}</td>
             <td>${sat.elevation_deg.toFixed(1)}°</td>
             <td>${sat.azimuth_deg.toFixed(1)}°</td>
-            <td>${sat.frequency_mhz ? sat.frequency_mhz.toFixed(2) : "N/A"}</td>
+            <td>${sat.frequency_mhz ?? "N/A"}</td>
         `;
         tbody.appendChild(row);
     }
 
-    setTimeout(animateTable, 700);
-}
-
-// ======================================
-// DUMMY SATELLITES (NON-REPEATING)
-// ======================================
-function generateDummySatellites(count) {
-    const list = [];
-    for (let i = 0; i < count; i++) {
-        list.push({
-            name: `SIM-SAT-${dummyCounter}`,
-            unique_id: `SIM${dummyCounter}`,
-            sub_latitude: (manualLat ?? 13.0) + Math.random(),
-            sub_longitude: (manualLon ?? 77.0) + Math.random(),
-            elevation_deg: 50 + Math.random() * 10,
-            azimuth_deg: Math.random() * 360,
-            frequency_mhz: null
-        });
-        dummyCounter++;
-    }
-    return list;
+    setTimeout(animateTable, 600);
 }
