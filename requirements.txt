@@ -1,0 +1,6 @@
+flask
+flask-cors
+gunicorn
+numpy
+requests
+skyfield
