@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZyroNav Satellite Interface</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <!-- Decorative 3D Background Elements -->
+    <div class="deco-shape sphere-1"></div>
+    <div class="deco-shape sphere-2"></div>
+    <div class="deco-shape torus-1"></div>
+    <div class="deco-shape cube-1"></div>
+
+    <div class="app-container">
+
+        <!-- Hover/Touch Slide-out Drawer (Now containing Filter Options) -->
+        <div class="drawer-trigger-zone"></div>
+        <aside class="side-drawer" id="sideDrawer">
+            <div class="drawer-content">
+                <div class="drawer-header">
+                    <h4>Filter Options</h4>
+                    <button class="close-btn" id="closeDrawerBtn"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+
+                <!-- Radio Options moved here -->
+                <div class="radio-group">
+                    <label class="radio-item">
+                        <input type="radio" name="elevation" value="10">
+                        <span class="radio-check"></span>
+                        <span class="radio-label">Elevation &ge; 10&deg;</span>
+                    </label>
+                    <label class="radio-item">
+                        <input type="radio" name="elevation" value="30" checked>
+                        <span class="radio-check"></span>
+                        <span class="radio-label">Elevation &ge; 30&deg;</span>
+                    </label>
+                    <label class="radio-item">
+                        <input type="radio" name="elevation" value="60">
+                        <span class="radio-check"></span>
+                        <span class="radio-label">Elevation &ge; 60&deg;</span>
+                    </label>
+                    <div class="divider"></div>
+                    <label class="radio-item">
+                        <input type="radio" name="mode" value="imu">
+                        <span class="radio-check"></span>
+                        <span class="radio-label">IMU Navigation</span>
+                    </label>
+                </div>
+            </div>
+        </aside>
+
+        <div class="main-layout">
+            <!-- Top Control Panel -->
+            <header class="top-bar">
+                <div class="brand-section">
+                    <button class="menu-toggle-btn" id="menuToggle"><i class="fa-solid fa-bars"></i></button>
+                    <div class="brand">
+                        <div class="logo-icon"><i class="fa-solid fa-satellite-dish"></i></div>
+                        <span>ZyroNav</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Dashboard Interface -->
+            <section class="dashboard-grid">
+                <!-- Left: Radar / Polar Plot -->
+                <div class="card radar-card">
+                    <div class="card-header">
+                        <div>
+                            <h4>Radar Tracking</h4>
+                            <p class="sub-text">Real-time scan</p>
+                        </div>
+                        <span class="badge badge-purple">Live</span>
+                    </div>
+                    <div class="radar-container">
+                        <div class="radar-ui">
+                            <div class="radar-ring r-1"></div>
+                            <div class="radar-ring r-2"></div>
+                            <div class="radar-ring r-3"></div>
+                            <div class="radar-scan-beam"></div>
+
+                            <!-- Satellites -->
+                            <div class="sat-point s-1" data-name="NOAA 19">
+                                <div class="tooltip">NOAA 19</div>
+                            </div>
+                            <div class="sat-point s-2" data-name="ISS">
+                                <div class="tooltip">ISS</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Data Readouts -->
+                <div class="right-content">
+
+                    <!-- NEW: Split Row for Input and Status -->
+                    <div class="section-row">
+                        <!-- Manual Input Box -->
+                        <div class="card control-box input-box">
+                            <div class="card-header">
+                                <h4>Manual Coordinate Input</h4>
+                            </div>
+                            <div class="input-row">
+                                <div class="field-group">
+                                    <label>Latitude</label>
+                                    <input type="text" class="styled-input" value="13.045612">
+                                </div>
+                                <div class="field-group">
+                                    <label>Longitude</label>
+                                    <input type="text" class="styled-input" value="77.568921">
+                                </div>
+                            </div>
+                            <button class="btn-primary full-width">Update Coordinates</button>
+                        </div>
+
+                        <!-- Status Box -->
+                        <div class="card status-box">
+                            <div class="card-header">
+                                <h4>Status</h4>
+                            </div>
+                            <div class="status-content">
+                                <div class="pulse-ring-container">
+                                    <div class="pulse-base"></div>
+                                    <div class="pulse-ring"></div>
+                                </div>
+                                <span class="status-label-lg">ONLINE</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Visible Satellites Table -->
+                    <div class="card table-card">
+                        <div class="card-header">
+                            <h4>Visible Satellites</h4>
+                            <span class="time-badge">10:42:15 UTC</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="clean-table">
+                                <thead>
+                                    <tr>
+                                        <th>Satellite Name</th>
+                                        <th>NORAD</th>
+                                        <th>Latitude (°)</th>
+                                        <th>Longitude (°)</th>
+                                        <th>Elev (°)</th>
+                                        <th>Az (°)</th>
+                                        <th>Freq (MHz)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Bottom: Output Screen -->
+                    <div class="card output-card">
+                        <div class="card-header">
+                            <h4>System Output</h4>
+                            <div class="dots"><i class="fa-solid fa-ellipsis"></i></div>
+                        </div>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <span class="stat-label">Latitude</span>
+                                <span class="stat-val">13.045&deg;</span>
+                                <div class="progress-bar">
+                                    <div class="fill" style="width: 80%"></div>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Longitude</span>
+                                <span class="stat-val">77.569&deg;</span>
+                                <div class="progress-bar">
+                                    <div class="fill" style="width: 60%"></div>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Accuracy</span>
+                                <span class="stat-val">4.2 m</span>
+                                <span class="trend up"><i class="fa-solid fa-arrow-trend-up"></i> +2%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Doppler</span>
+                                <span class="stat-val">&pm;2.1 kHz</span>
+                                <span class="trend down"><i class="fa-solid fa-arrow-trend-down"></i> 0.5%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>
